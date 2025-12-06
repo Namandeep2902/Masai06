@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>L1 - Enhanced Todo List</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            width: 400px;
+            margin: 30px auto;
+        }
+
+        .completed {
+            text-decoration: line-through;
+            color: gray;
+        }
+
+        li {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #ccc;
+        }
+
+        button {
+            margin-left: 10px;
+        }
+
+        #searchBar {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>Enhanced Todo List</h2>
+    <input type="text" id="searchBar" placeholder="Search tasks...">
+    <input type="text" id="taskInput" placeholder="Enter a new task">
+    <button id="addTaskBtn">Add Task</button>
+    <ul id="taskList"></ul>
+
+    <script>
+        let tasks = JSON.parse(localStorage.getItem("taskList")) || [];
+
+        const taskList = document.getElementById("taskList");
+        const taskInput = document.getElementById("taskInput");
+        const searchBar = document.getElementById("searchBar");
+        const addTaskBtn = document.getElementById("addTaskBtn");
+        function saveTasks() {
+            localStorage.setItem("taskList", JSON.stringify(tasks));
+        }
+        function displayTasks(filterText = "") {
+            taskList.innerHTML = ""; 
+                  tasks
+                .filter(task => task.text.toLowerCase().includes(filterText.toLowerCase()))
+                .forEach(task => {
+                const li = document.createElement("li");
+                const span = document.createElement("span");
+                span.textContent = task.text;
+                if (task.completed) {
+                    span.classList.add("completed");
+                }
+                span.addEventListener("click", () => {
+                    task.completed = !task.completed;
+                    saveTasks();
+                    displayTasks(searchBar.value);
+                });
+                const delBtn = document.createElement("button");
+                delBtn.textContent = "Delete";
+                delBtn.addEventListener("click", () => {
+                    tasks = tasks.filter(t => t.id !== task.id);
+                    saveTasks();
+                    displayTasks(searchBar.value);
+                });
+                li.appendChild(span);
+                li.appendChild(delBtn);
+                taskList.appendChild(li);
+            });
+        }
+        addTaskBtn.addEventListener("click", () => {
+            const text = taskInput.value.trim();
+
+            if (text === "") {
+                alert("Task cannot be empty!");
+                return;
+            }
+            const newTask = {
+                id: Date.now(),       
+                text: text,
+                completed: false
+            };
+            tasks.push(newTask);
+            saveTasks();
+            displayTasks();
+            taskInput.value = ""; 
+        });
+        searchBar.addEventListener("input", () => {
+            displayTasks(searchBar.value);
+        });
+        displayTasks();
+    </script>
+</body>
+</html>
